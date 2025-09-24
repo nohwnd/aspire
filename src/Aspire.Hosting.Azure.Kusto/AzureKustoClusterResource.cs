@@ -4,13 +4,14 @@
 #pragma warning disable AZPROVISION001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
 using Aspire.Hosting.ApplicationModel;
+using Aspire.Hosting.Azure;
 using Azure.Provisioning;
 using Azure.Provisioning.Authorization;
 using Azure.Provisioning.Expressions;
 using Azure.Provisioning.Kusto;
 using Azure.Provisioning.Primitives;
 
-namespace Aspire.Hosting.Azure.Kusto;
+namespace Aspire.Hosting;
 
 /// <summary>
 /// A resource that represents a Kusto cluster.

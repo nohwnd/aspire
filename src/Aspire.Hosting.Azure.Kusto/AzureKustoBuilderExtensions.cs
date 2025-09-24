@@ -4,6 +4,7 @@
 #pragma warning disable AZPROVISION001 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
 
 using Aspire.Hosting.ApplicationModel;
+using Aspire.Hosting.Azure;
 using Azure.Identity;
 using Azure.Provisioning;
 using Azure.Provisioning.Kusto;
@@ -15,7 +16,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Polly;
 
-namespace Aspire.Hosting.Azure.Kusto;
+namespace Aspire.Hosting;
 
 /// <summary>
 /// Extension methods for adding Kusto resources to the application model.
