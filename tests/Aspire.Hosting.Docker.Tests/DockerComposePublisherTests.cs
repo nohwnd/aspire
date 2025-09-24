@@ -543,4 +543,179 @@ public class DockerComposePublisherTests(ITestOutputHelper outputHelper)
             }
         };
     }
+
+    [Fact]
+    public async Task DockerComposePublisher_SetsContainerImageReferenceForProjectResource()
+    {
+        using var tempDir = new TempDirectory();
+        var builder = TestDistributedApplicationBuilder.Create(DistributedApplicationOperation.Publish, publisher: "default", outputPath: tempDir.Path);
+
+        builder.Services.AddSingleton<IResourceContainerImageBuilder, MockImageBuilder>();
+
+        builder.AddDockerComposeEnvironment("docker-compose");
+
+        // Add a project resource which gets built into a container
+        builder.AddProject<TestProjectWithLaunchSettings>("my-web-api");
+
+        var app = builder.Build();
+        app.Run();
+
+        // Assert
+        var envPath = Path.Combine(tempDir.Path, ".env");
+        Assert.True(File.Exists(envPath));
+
+        var envContent = File.ReadAllText(envPath);
+
+        // Verify project resource gets container image reference
+        Assert.Contains("MY_WEB_API_IMAGE=my-web-api:latest", envContent);
+        Assert.Contains("# Container image name for my-web-api", envContent);
+
+        await Verify(envContent, "env");
+    }
+
+    [Fact]
+    public async Task DockerComposePublisher_SetsContainerImageReferenceForDockerfileBuild()
+    {
+        using var tempDir = new TempDirectory();
+        var builder = TestDistributedApplicationBuilder.Create(DistributedApplicationOperation.Publish, publisher: "default", outputPath: tempDir.Path);
+
+        builder.Services.AddSingleton<IResourceContainerImageBuilder, MockImageBuilder>();
+
+        builder.AddDockerComposeEnvironment("docker-compose");
+
+        // Add executable with Dockerfile which creates a container image reference
+        builder.AddExecutable("custom-app", "foo", ".")
+               .PublishAsDockerFile();
+
+        var app = builder.Build();
+        app.Run();
+
+        // Assert
+        var envPath = Path.Combine(tempDir.Path, ".env");
+        Assert.True(File.Exists(envPath));
+
+        var envContent = File.ReadAllText(envPath);
+
+        // Verify Dockerfile build resource gets container image reference
+        Assert.Contains("CUSTOM_APP_IMAGE=custom-app:latest", envContent);
+        Assert.Contains("# Container image name for custom-app", envContent);
+
+        await Verify(envContent, "env");
+    }
+
+    [Fact]
+    public async Task DockerComposePublisher_MultipleProjectResourcesGenerateDistinctImageReferences()
+    {
+        using var tempDir = new TempDirectory();
+        var builder = TestDistributedApplicationBuilder.Create(DistributedApplicationOperation.Publish, publisher: "default", outputPath: tempDir.Path);
+
+        builder.Services.AddSingleton<IResourceContainerImageBuilder, MockImageBuilder>();
+
+        builder.AddDockerComposeEnvironment("docker-compose");
+
+        // Add multiple project resources that should generate image placeholders
+        builder.AddProject<TestProjectWithLaunchSettings>("web-api");
+        builder.AddProject<TestProjectWithLaunchSettings>("worker-service");
+        builder.AddExecutable("migration-tool", "migrate", ".").PublishAsDockerFile();
+
+        var app = builder.Build();
+        app.Run();
+
+        // Assert
+        var envPath = Path.Combine(tempDir.Path, ".env");
+        Assert.True(File.Exists(envPath));
+
+        var envContent = File.ReadAllText(envPath);
+
+        // Verify each project resource gets its own distinct image reference
+        Assert.Contains("WEB_API_IMAGE=web-api:latest", envContent);
+        Assert.Contains("WORKER_SERVICE_IMAGE=worker-service:latest", envContent);
+        Assert.Contains("MIGRATION_TOOL_IMAGE=migration-tool:latest", envContent);
+
+        // Verify comments are distinct
+        Assert.Contains("# Container image name for web-api", envContent);
+        Assert.Contains("# Container image name for worker-service", envContent);
+        Assert.Contains("# Container image name for migration-tool", envContent);
+
+        // Verify no name conflicts
+        var imageLines = envContent.Split('\n')
+            .Where(line => line.Contains("_IMAGE="))
+            .ToArray();
+
+        Assert.Equal(3, imageLines.Length);
+        Assert.Equal(3, imageLines.Distinct().Count()); // All should be unique
+
+        await Verify(envContent, "env");
+    }
+
+    [Fact]
+    public async Task DockerComposePublisher_ContainerImageReferenceWithResourceNameNormalization()
+    {
+        using var tempDir = new TempDirectory();
+        var builder = TestDistributedApplicationBuilder.Create(DistributedApplicationOperation.Publish, publisher: "default", outputPath: tempDir.Path);
+
+        builder.Services.AddSingleton<IResourceContainerImageBuilder, MockImageBuilder>();
+
+        builder.AddDockerComposeEnvironment("docker-compose");
+
+        // Add project resources with names that require normalization in environment variable names
+        builder.AddProject<TestProjectWithLaunchSettings>("web-app-01");
+        builder.AddProject<TestProjectWithLaunchSettings>("database-primary");
+        builder.AddExecutable("message-queue-service", "run", ".").PublishAsDockerFile();
+
+        var app = builder.Build();
+        app.Run();
+
+        // Assert
+        var envPath = Path.Combine(tempDir.Path, ".env");
+        Assert.True(File.Exists(envPath));
+
+        var envContent = File.ReadAllText(envPath);
+
+        // Verify resource names are normalized to valid env var names (hyphens become underscores)
+        Assert.Contains("WEB_APP_01_IMAGE=web-app-01:latest", envContent);
+        Assert.Contains("DATABASE_PRIMARY_IMAGE=database-primary:latest", envContent);
+        Assert.Contains("MESSAGE_QUEUE_SERVICE_IMAGE=message-queue-service:latest", envContent);
+
+        await Verify(envContent, "env");
+    }
+
+    [Fact]
+    public void DockerComposePublisher_RegularContainersDoNotGenerateImageReferences()
+    {
+        using var tempDir = new TempDirectory();
+        var builder = TestDistributedApplicationBuilder.Create(DistributedApplicationOperation.Publish, publisher: "default", outputPath: tempDir.Path);
+
+        builder.Services.AddSingleton<IResourceContainerImageBuilder, MockImageBuilder>();
+
+        builder.AddDockerComposeEnvironment("docker-compose");
+
+        // Add regular containers - these should NOT generate image references
+        // because they already have specified image names and don't need to be built
+        builder.AddContainer("webapp", "nginx:alpine");
+        builder.AddContainer("database", "postgres:15");
+        builder.AddContainer("cache-service", "redis:7");
+
+        var app = builder.Build();
+        app.Run();
+
+        // Assert
+        var envPath = Path.Combine(tempDir.Path, ".env");
+        
+        // Regular containers may not create an env file at all if they don't have any environment variables
+        if (File.Exists(envPath))
+        {
+            var envContent = File.ReadAllText(envPath);
+
+            // Verify regular containers DO NOT get image references
+            Assert.DoesNotContain("WEBAPP_IMAGE=", envContent);
+            Assert.DoesNotContain("DATABASE_IMAGE=", envContent);
+            Assert.DoesNotContain("CACHE_SERVICE_IMAGE=", envContent);
+        }
+        else
+        {
+            // It's valid for no .env file to be created if there are no environment variables to capture
+            Assert.True(true, "No .env file created for regular containers without environment variables");
+        }
+    }
 }
