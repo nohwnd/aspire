@@ -92,7 +92,9 @@
       <_RelativeProjectPath Condition="$(_RelativeProjectPath.StartsWith('/')) or $(_RelativeProjectPath.StartsWith('\'))">$(_RelativeProjectPath.Substring(1))</_RelativeProjectPath>
 
       <!-- Check if test metadata was generated -->
-      <_HelixDir>$([MSBuild]::NormalizeDirectory($(ArtifactsDir), 'helix'))</_HelixDir>
+      <!-- Use TestArchiveTestsDir if set (for Templates/EndToEnd tests), otherwise use default helix dir -->
+      <_HelixDir Condition="'$(TestArchiveTestsDir)' != ''">$(TestArchiveTestsDir)</_HelixDir>
+      <_HelixDir Condition="'$(TestArchiveTestsDir)' == ''">$([MSBuild]::NormalizeDirectory($(ArtifactsDir), 'helix'))</_HelixDir>
       <_TestListFile>$(_HelixDir)$(MSBuildProjectName).tests.list</_TestListFile>
       <_MetadataFile>$(_HelixDir)$(MSBuildProjectName).tests.metadata.json</_MetadataFile>
       <_HasTestMetadata Condition="Exists('$(_MetadataFile)')">true</_HasTestMetadata>

@@ -155,14 +155,18 @@
       <_TestMatrixOutputPath Condition="'$(TestMatrixOutputPath)' != ''">$([MSBuild]::NormalizePath('$(RepoRoot)', '$(TestMatrixOutputPath)'))</_TestMatrixOutputPath>
       <_BuildMatrixScript>$([MSBuild]::NormalizePath($(RepoRoot), 'eng', 'scripts', 'build-test-matrix.ps1'))</_BuildMatrixScript>
 
-      <!-- Determine current OS -->
-      <_CurrentOS Condition="$([MSBuild]::IsOSPlatform('Linux'))">linux</_CurrentOS>
-      <_CurrentOS Condition="$([MSBuild]::IsOSPlatform('Windows'))">windows</_CurrentOS>
-      <_CurrentOS Condition="$([MSBuild]::IsOSPlatform('OSX'))">macos</_CurrentOS>
+      <!-- Define helix directory (same as used in TestEnumerationRunsheetBuilder) -->
+      <_HelixDir>$([MSBuild]::NormalizeDirectory($(ArtifactsDir), 'helix'))</_HelixDir>
+
+      <!-- Determine current OS - but use "all" for combined matrix unless BuildOs is explicitly set -->
+      <_CurrentOS Condition="'$(BuildOs)' != ''">$(BuildOs)</_CurrentOS>
+      <_CurrentOS Condition="'$(BuildOs)' == '' and $([MSBuild]::IsOSPlatform('Linux'))">all</_CurrentOS>
+      <_CurrentOS Condition="'$(BuildOs)' == '' and $([MSBuild]::IsOSPlatform('Windows'))">all</_CurrentOS>
+      <_CurrentOS Condition="'$(BuildOs)' == '' and $([MSBuild]::IsOSPlatform('OSX'))">all</_CurrentOS>
     </PropertyGroup>
 
     <!-- Call the consolidated PowerShell script to build the test matrix -->
-    <Exec Command="pwsh -File &quot;$(_BuildMatrixScript)&quot; -ArtifactsTmpDir &quot;$(ArtifactsTmpDir)&quot; -ArtifactsHelixDir &quot;$(ArtifactsHelixDir)&quot; -OutputMatrixFile &quot;$(_TestMatrixOutputPath)&quot; -TestsListOutputFile &quot;$(_TestsListOutputPath)&quot; -CurrentOS &quot;$(_CurrentOS)&quot;"
+    <Exec Command="pwsh -File &quot;$(_BuildMatrixScript)&quot; -ArtifactsTmpDir &quot;$(ArtifactsTmpDir)&quot; -ArtifactsHelixDir &quot;$(_HelixDir)&quot; -OutputMatrixFile &quot;$(_TestMatrixOutputPath)&quot; -TestsListOutputFile &quot;$(_TestsListOutputPath)&quot; -CurrentOS &quot;$(_CurrentOS)&quot;"
           ConsoleToMSBuild="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="TestEnumerationOutput" />
     </Exec>

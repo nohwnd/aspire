@@ -179,7 +179,9 @@
   <Target Name="WriteTestMetadata"
           Condition="'$(GenerateCIPartitions)' == 'true' and '$(IsTestProject)' == 'true'">
     <PropertyGroup>
-      <_HelixDir>$([MSBuild]::NormalizeDirectory($(ArtifactsDir), 'helix'))</_HelixDir>
+      <!-- Use TestArchiveTestsDir if set (for Templates/EndToEnd tests), otherwise use default helix dir -->
+      <_HelixDir Condition="'$(TestArchiveTestsDir)' != ''">$(TestArchiveTestsDir)</_HelixDir>
+      <_HelixDir Condition="'$(TestArchiveTestsDir)' == ''">$([MSBuild]::NormalizeDirectory($(ArtifactsDir), 'helix'))</_HelixDir>
       <_MetadataFile>$(_HelixDir)$(MSBuildProjectName).tests.metadata.json</_MetadataFile>
 
       <!-- Calculate relative project path for metadata -->

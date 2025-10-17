@@ -27,6 +27,7 @@
 
 .PARAMETER CurrentOS
   Current operating system (linux, windows, macos). Filters tests by supported OSes.
+  If not specified or set to 'all', includes tests for all OSes without filtering.
 
 .NOTES
   PowerShell 7+
@@ -47,8 +48,8 @@ param(
   [Parameter(Mandatory=$false)]
   [string]$TestsListOutputFile = "",
 
-  [Parameter(Mandatory=$true)]
-  [string]$CurrentOS
+  [Parameter(Mandatory=$false)]
+  [string]$CurrentOS = "all"
 )
 
 $ErrorActionPreference = 'Stop'
@@ -57,7 +58,14 @@ Set-StrictMode -Version Latest
 # Normalize OS name
 $CurrentOS = $CurrentOS.ToLowerInvariant()
 
-Write-Host "Building test matrix for OS: $CurrentOS"
+# Determine if we should filter by OS
+$filterByOS = $CurrentOS -ne 'all'
+
+if ($filterByOS) {
+  Write-Host "Building test matrix for OS: $CurrentOS"
+} else {
+  Write-Host "Building combined test matrix for all OSes"
+}
 Write-Host "Enumerations directory: $ArtifactsTmpDir"
 Write-Host "Helix directory: $ArtifactsHelixDir"
 
@@ -214,7 +222,8 @@ foreach ($enumFile in $enumerationFiles) {
   Write-Host "Processing: $($enum.project)"
 
   # Filter by supported OSes (skip if current OS not supported)
-  if ($enum.supportedOSes -and $enum.supportedOSes.Count -gt 0) {
+  # Only filter if a specific OS was requested
+  if ($filterByOS -and $enum.supportedOSes -and $enum.supportedOSes.Count -gt 0) {
     $osSupported = $false
     foreach ($os in $enum.supportedOSes) {
       if ($os.ToLowerInvariant() -eq $CurrentOS) {
@@ -233,9 +242,26 @@ foreach ($enumFile in $enumerationFiles) {
   if ($enum.splitTests -eq 'true' -and $enum.hasTestMetadata -eq 'true') {
     Write-Host "  → Split test (processing partitions/classes)"
 
-    # Read metadata and test list
-    $metaFile = Join-Path $ArtifactsHelixDir "$($enum.project).tests.metadata.json"
-    $listFile = Join-Path $ArtifactsHelixDir "$($enum.project).tests.list"
+    # Read metadata and test list - use paths from enumeration file if available
+    if ($enum.metadataFile) {
+      # Path is relative to repo root, make it absolute
+      $metaFile = Join-Path $PSScriptRoot "../../$($enum.metadataFile)" -Resolve -ErrorAction SilentlyContinue
+      if (-not $metaFile) {
+        $metaFile = [System.IO.Path]::Combine($PSScriptRoot, "../..", $enum.metadataFile)
+      }
+    } else {
+      $metaFile = Join-Path $ArtifactsHelixDir "$($enum.project).tests.metadata.json"
+    }
+
+    if ($enum.testListFile) {
+      # Path is relative to repo root, make it absolute
+      $listFile = Join-Path $PSScriptRoot "../../$($enum.testListFile)" -Resolve -ErrorAction SilentlyContinue
+      if (-not $listFile) {
+        $listFile = [System.IO.Path]::Combine($PSScriptRoot, "../..", $enum.testListFile)
+      }
+    } else {
+      $listFile = Join-Path $ArtifactsHelixDir "$($enum.project).tests.list"
+    }
 
     if (-not (Test-Path $metaFile)) {
       Write-Warning "  ⚠ Metadata file not found: $metaFile"
@@ -287,10 +313,19 @@ foreach ($enumFile in $enumerationFiles) {
   }
   else {
     # Regular (non-split) test
-    Write-Host "  → Regular test"
+    #Write-Host "  → Regular test"
 
-    # Try to load metadata if available
-    $metaFile = Join-Path $ArtifactsHelixDir "$($enum.project).tests.metadata.json"
+    # Try to load metadata if available - use path from enumeration file if available
+    if ($enum.metadataFile) {
+      # Path is relative to repo root, make it absolute
+      $metaFile = Join-Path $PSScriptRoot "../../$($enum.metadataFile)" -Resolve -ErrorAction SilentlyContinue
+      if (-not $metaFile) {
+        $metaFile = [System.IO.Path]::Combine($PSScriptRoot, "../..", $enum.metadataFile)
+      }
+    } else {
+      $metaFile = Join-Path $ArtifactsHelixDir "$($enum.project).tests.metadata.json"
+    }
+
     $metadata = $null
     if (Test-Path $metaFile) {
       $metadata = Get-Content -Raw -Path $metaFile | ConvertFrom-Json
@@ -300,7 +335,7 @@ foreach ($enumFile in $enumerationFiles) {
     $matrixEntries.Add($entry)
     $regularTestsList.Add($enum.shortName)
 
-    Write-Host "  ✓ Added regular test"
+    #Write-Host "  ✓ Added regular test"
   }
 }
 
