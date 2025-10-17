@@ -41,11 +41,11 @@
       <Output TaskParameter="TargetOutputs" ItemName="_ProjectInfo" />
     </MSBuild>
 
-    <!-- For split test projects, build them to generate test metadata -->
+    <!-- Build all test projects to generate test metadata (needed for requiresNugets, requiresTestSdk, etc.) -->
     <MSBuild Projects="@(_CurrentProject)"
              Properties="PrepareForHelix=true;BuildOs=$(BuildOs)"
              Targets="Build;WriteTestMetadata"
-             Condition="'$(_ShouldSkipProject)' != 'true' and '@(_ProjectInfo->Count())' > 0 and '%(_ProjectInfo.SplitTests)' == 'true'" />
+             Condition="'$(_ShouldSkipProject)' != 'true' and '@(_ProjectInfo->Count())' > 0" />
 
     <!-- Generate enumeration data for this project -->
     <PropertyGroup Condition="'$(_ShouldSkipProject)' != 'true' and '@(_ProjectInfo->Count())' > 0">
@@ -54,11 +54,11 @@
       <!-- Remove leading slash/backslash if present -->
       <_RelativeProjectPath Condition="$(_RelativeProjectPath.StartsWith('/')) or $(_RelativeProjectPath.StartsWith('\'))">$(_RelativeProjectPath.Substring(1))</_RelativeProjectPath>
 
-      <!-- For split tests, check if test metadata was generated -->
+      <!-- Check if test metadata was generated -->
       <_HelixDir>$([MSBuild]::NormalizeDirectory($(ArtifactsDir), 'helix'))</_HelixDir>
       <_TestListFile>$(_HelixDir)$(MSBuildProjectName).tests.list</_TestListFile>
       <_MetadataFile>$(_HelixDir)$(MSBuildProjectName).tests.metadata.json</_MetadataFile>
-      <_HasTestMetadata Condition="'%(_ProjectInfo.SplitTests)' == 'true' and Exists('$(_TestListFile)') and Exists('$(_MetadataFile)')">true</_HasTestMetadata>
+      <_HasTestMetadata Condition="Exists('$(_MetadataFile)')">true</_HasTestMetadata>
       <_HasTestMetadata Condition="'$(_HasTestMetadata)' != 'true'">false</_HasTestMetadata>
 
       <!-- Build enumeration JSON -->

@@ -210,6 +210,31 @@ if ($RegularTestProjectsFile -and (Test-Path $RegularTestProjectsFile)) {
     }
     Write-Host "Adding $($regularProjectsData.Count) regular test project(s) from JSON"
     foreach ($proj in $regularProjectsData) {
+      # Try to read metadata file for this project if it exists
+      $metadataFile = $null
+      if ($proj.metadataFile) {
+        # metadataFile path is relative to repo root, so make it absolute
+        $metadataFile = Join-Path $TestListsDirectory ".." ($proj.metadataFile -replace '^artifacts/', '')
+      }
+
+      $meta = $null
+      if ($metadataFile -and (Test-Path $metadataFile)) {
+        $meta = Read-Metadata $metadataFile $proj.project
+        Write-Host "  Loaded metadata for $($proj.project) from $metadataFile (requiresNugets=$($meta.requiresNugets))"
+      } else {
+        # Use defaults if no metadata file exists
+        $meta = @{
+          projectName = $proj.project
+          testProjectPath = $proj.fullPath
+          requiresNugets = 'false'
+          requiresTestSdk = 'false'
+          enablePlaywrightInstall = 'false'
+          testSessionTimeout = '20m'
+          testHangTimeout = '10m'
+        }
+        Write-Host "  Using default metadata for $($proj.project) (no metadata file found)"
+      }
+
       $entry = [ordered]@{
         type = 'regular'
         projectName = $proj.project
@@ -217,11 +242,11 @@ if ($RegularTestProjectsFile -and (Test-Path $RegularTestProjectsFile)) {
         shortname = $proj.shortName
         testProjectPath = $proj.fullPath
         extraTestArgs = ""
-        requiresNugets = $false
-        requiresTestSdk = $false
-        enablePlaywrightInstall = $false
-        testSessionTimeout = '20m'
-        testHangTimeout = '10m'
+        requiresNugets = ($meta.requiresNugets -eq 'true')
+        requiresTestSdk = ($meta.requiresTestSdk -eq 'true')
+        enablePlaywrightInstall = ($meta.enablePlaywrightInstall -eq 'true')
+        testSessionTimeout = $meta.testSessionTimeout
+        testHangTimeout = $meta.testHangTimeout
       }
       $entries.Add($entry) | Out-Null
     }
