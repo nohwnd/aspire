@@ -35,9 +35,20 @@ if (-not $enumerationFiles) {
     exit 1
 }
 
-if (-not (Test-Path $TestMatrixOutputPath)) {
-    Write-Error "TestMatrixOutputPath directory does not exist: $TestMatrixOutputPath"
-    exit 1
+# Validate TestMatrixOutputPath if provided
+if ($TestMatrixOutputPath) {
+    # TestMatrixOutputPath must be a JSON file path
+    if ($TestMatrixOutputPath -notmatch '\.json$') {
+        Write-Error "TestMatrixOutputPath must be a JSON file path: $TestMatrixOutputPath"
+        exit 1
+    }
+
+    # Check parent directory exists
+    $parentDir = Split-Path $TestMatrixOutputPath -Parent
+    if (-not (Test-Path $parentDir)) {
+        Write-Error "Parent directory for TestMatrixOutputPath does not exist: $parentDir"
+        exit 1
+    }
 }
 
 Write-Host "Found $($enumerationFiles.Count) test enumeration files"
@@ -96,11 +107,8 @@ else {
 
 Write-Host "Generating test matrices..."
 
-# Check if TestMatrixOutputPath ends with .json (single file) or is a directory
-$isJsonFile = $TestMatrixOutputPath -match '\.json$'
-
-if ($isJsonFile) {
-    # Single JSON file output - create directory for intermediate files
+if ($TestMatrixOutputPath) {
+    # Create directory for intermediate files
     $tempMatrixDir = Join-Path (Split-Path $TestMatrixOutputPath -Parent) 'temp-matrix'
     New-Item -Path $tempMatrixDir -ItemType Directory -Force | Out-Null
 
@@ -126,17 +134,6 @@ if ($isJsonFile) {
         # No split tests, create empty matrix
         '{"include":[]}' | Set-Content $TestMatrixOutputPath
         Write-Host "No split tests found, created empty matrix at: $TestMatrixOutputPath"
-    }
-} else {
-    # Directory output (original behavior)
-    New-Item -Path $TestMatrixOutputPath -ItemType Directory -Force | Out-Null
-
-    # Call existing matrix generation script if split tests exist
-    if ($splitTestProjects.Count -gt 0) {
-        $matrixScriptPath = Join-Path $RepoRoot 'eng/scripts/generate-test-matrix.ps1'
-        $testListsDir = Join-Path (Split-Path $TestsListOutputPath -Parent) 'helix'
-        Write-Host "Calling matrix generation script..."
-        & $matrixScriptPath -TestListsDirectory $testListsDir -OutputDirectory $TestMatrixOutputPath -BuildOs $BuildOs -RegularTestProjectsFile $TestsListOutputPath
     }
 }
 
