@@ -49,7 +49,7 @@
 
     <PropertyGroup>
       <!-- Path to discovery helper script -->
-      <_DiscoveryScriptPath>$(RepoRoot)eng\scripts\extract-test-metadata.ps1</_DiscoveryScriptPath>
+      <_DiscoveryScriptPath>$(RepoRoot)eng\scripts\split-test-projects-for-ci.ps1</_DiscoveryScriptPath>
 
       <!-- Output files -->
       <_TestListFile>$(TestArchiveTestsDir)$(MSBuildProjectName).tests.list</_TestListFile>

@@ -117,7 +117,7 @@ function New-CollectionTestEntry {
   $entry = [ordered]@{
     type = 'collection'
     project = $Metadata.projectName
-    shortname = "$($Metadata.projectName)-$suffix"
+    shortname = if ($IsUncollected) { $Metadata.projectName } else { "$($Metadata.projectName)-$suffix" }
     testProjectPath = $Metadata.testProjectPath
     workitemprefix = "$($Metadata.projectName)_$suffix"
     collection = $CollectionName
@@ -147,7 +147,7 @@ function New-CollectionTestEntry {
 
   # Add test filter for collection-based splitting
   if ($IsUncollected) {
-    $entry['extraTestArgs'] = '--filter-not-trait "Partition"'
+    $entry['extraTestArgs'] = '--filter-not-trait "Partition=*"'
   } else {
     $entry['extraTestArgs'] = "--filter-trait `"Partition=$CollectionName`""
   }
