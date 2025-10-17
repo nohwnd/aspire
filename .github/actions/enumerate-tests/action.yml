@@ -31,6 +31,10 @@ runs:
       with:
         global-json-file: ${{ github.workspace }}/global.json
 
+    - name: Restore
+      shell: bash
+      run: ./restore.sh
+
     - name: Get list of integration tests
       if: ${{ inputs.includeIntegrations }}
       shell: pwsh
