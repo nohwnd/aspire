@@ -56,6 +56,15 @@ runs:
           $testsNotRequiringNugets = @()
 
           foreach ($test in $matrixContent.include) {
+            # Add OS runner mapping to each entry
+            $osRunner = switch ($test.os) {
+              'windows' { 'windows-latest' }
+              'linux' { 'ubuntu-latest' }
+              'macos' { 'macos-latest' }
+              default { 'ubuntu-latest' }
+            }
+            $test | Add-Member -NotePropertyName 'runs-on' -NotePropertyValue $osRunner -Force
+
             if ($test.requiresNugets -eq "true" -or $test.requiresNugets -eq $true) {
               $testsRequiringNugets += $test
             } else {

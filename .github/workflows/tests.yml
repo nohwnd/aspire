@@ -30,9 +30,9 @@ jobs:
     with:
       versionOverrideArg: ${{ inputs.versionOverrideArg }}
 
-  tests_no_nugets_lin:
+  tests_no_nugets:
     uses: ./.github/workflows/run-tests.yml
-    name: Tests Linux (No Nugets)
+    name: Tests (No Nugets)
     needs: setup_for_tests
     if: ${{ fromJson(needs.setup_for_tests.outputs.tests_matrix_no_nugets).include[0] != null }}
     strategy:
@@ -40,7 +40,7 @@ jobs:
       matrix: ${{ fromJson(needs.setup_for_tests.outputs.tests_matrix_no_nugets) }}
     with:
       testShortName: ${{ matrix.shortname }}
-      os: "ubuntu-latest"
+      os: ${{ matrix.runs-on }}
       testProjectPath: ${{ matrix.testProjectPath }}
       testSessionTimeout: ${{ matrix.testSessionTimeout }}
       testHangTimeout: ${{ matrix.testHangTimeout }}
@@ -50,48 +50,8 @@ jobs:
       requiresTestSdk: ${{ matrix.requiresTestSdk }}
       enablePlaywrightInstall: ${{ matrix.enablePlaywrightInstall }}
 
-  tests_no_nugets_macos:
-    uses: ./.github/workflows/run-tests.yml
-    name: Tests macOS (No Nugets)
-    needs: setup_for_tests
-    if: ${{ fromJson(needs.setup_for_tests.outputs.tests_matrix_no_nugets).include[0] != null }}
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJson(needs.setup_for_tests.outputs.tests_matrix_no_nugets) }}
-    with:
-      testShortName: ${{ matrix.shortname }}
-      os: "macos-latest"
-      testProjectPath: ${{ matrix.testProjectPath }}
-      testSessionTimeout: ${{ matrix.testSessionTimeout }}
-      testHangTimeout: ${{ matrix.testHangTimeout }}
-      extraTestArgs: "--filter-not-trait \"quarantined=true\" --filter-not-trait \"outerloop=true\" ${{ matrix.extraTestArgs }}"
-      versionOverrideArg: ${{ inputs.versionOverrideArg }}
-      requiresNugets: ${{ matrix.requiresNugets }}
-      requiresTestSdk: ${{ matrix.requiresTestSdk }}
-      enablePlaywrightInstall: ${{ matrix.enablePlaywrightInstall }}
-
-  tests_no_nugets_win:
-    uses: ./.github/workflows/run-tests.yml
-    name: Tests Windows (No Nugets)
-    needs: setup_for_tests
-    if: ${{ fromJson(needs.setup_for_tests.outputs.tests_matrix_no_nugets).include[0] != null }}
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJson(needs.setup_for_tests.outputs.tests_matrix_no_nugets) }}
-    with:
-      testShortName: ${{ matrix.shortname }}
-      os: "windows-latest"
-      testProjectPath: ${{ matrix.testProjectPath }}
-      testSessionTimeout: ${{ matrix.testSessionTimeout }}
-      testHangTimeout: ${{ matrix.testHangTimeout }}
-      extraTestArgs: "--filter-not-trait \"quarantined=true\" --filter-not-trait \"outerloop=true\" ${{ matrix.extraTestArgs }}"
-      versionOverrideArg: ${{ inputs.versionOverrideArg }}
-      requiresNugets: ${{ matrix.requiresNugets }}
-      requiresTestSdk: ${{ matrix.requiresTestSdk }}
-      enablePlaywrightInstall: ${{ matrix.enablePlaywrightInstall }}
-
-  tests_requires_nugets_lin:
-    name: Tests Linux (Requires Nugets)
+  tests_requires_nugets:
+    name: Tests (Requires Nugets)
     uses: ./.github/workflows/run-tests.yml
     needs: [setup_for_tests, build_packages]
     if: ${{ fromJson(needs.setup_for_tests.outputs.tests_matrix_requires_nugets).include[0] != null }}
@@ -100,47 +60,7 @@ jobs:
       matrix: ${{ fromJson(needs.setup_for_tests.outputs.tests_matrix_requires_nugets) }}
     with:
       testShortName: ${{ matrix.shortname }}
-      os: "ubuntu-latest"
-      testProjectPath: ${{ matrix.testProjectPath }}
-      testSessionTimeout: ${{ matrix.testSessionTimeout }}
-      testHangTimeout: ${{ matrix.testHangTimeout }}
-      extraTestArgs: "--filter-not-trait \"quarantined=true\" --filter-not-trait \"outerloop=true\" ${{ matrix.extraTestArgs }}"
-      versionOverrideArg: ${{ inputs.versionOverrideArg }}
-      requiresNugets: ${{ matrix.requiresNugets }}
-      requiresTestSdk: ${{ matrix.requiresTestSdk }}
-      enablePlaywrightInstall: ${{ matrix.enablePlaywrightInstall }}
-
-  tests_requires_nugets_macos:
-    name: Tests macOS (Requires Nugets)
-    uses: ./.github/workflows/run-tests.yml
-    needs: [setup_for_tests, build_packages]
-    if: ${{ fromJson(needs.setup_for_tests.outputs.tests_matrix_requires_nugets).include[0] != null }}
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJson(needs.setup_for_tests.outputs.tests_matrix_requires_nugets) }}
-    with:
-      testShortName: ${{ matrix.shortname }}
-      os: "macos-latest"
-      testProjectPath: ${{ matrix.testProjectPath }}
-      testSessionTimeout: ${{ matrix.testSessionTimeout }}
-      testHangTimeout: ${{ matrix.testHangTimeout }}
-      extraTestArgs: "--filter-not-trait \"quarantined=true\" --filter-not-trait \"outerloop=true\" ${{ matrix.extraTestArgs }}"
-      versionOverrideArg: ${{ inputs.versionOverrideArg }}
-      requiresNugets: ${{ matrix.requiresNugets }}
-      requiresTestSdk: ${{ matrix.requiresTestSdk }}
-      enablePlaywrightInstall: ${{ matrix.enablePlaywrightInstall }}
-
-  tests_requires_nugets_win:
-    name: Tests Windows (Requires Nugets)
-    uses: ./.github/workflows/run-tests.yml
-    needs: [setup_for_tests, build_packages]
-    if: ${{ fromJson(needs.setup_for_tests.outputs.tests_matrix_requires_nugets).include[0] != null }}
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJson(needs.setup_for_tests.outputs.tests_matrix_requires_nugets) }}
-    with:
-      testShortName: ${{ matrix.shortname }}
-      os: "windows-latest"
+      os: ${{ matrix.runs-on }}
       testProjectPath: ${{ matrix.testProjectPath }}
       testSessionTimeout: ${{ matrix.testSessionTimeout }}
       testHangTimeout: ${{ matrix.testHangTimeout }}
@@ -181,12 +101,8 @@ jobs:
     name: Final Test Results
     needs: [
       extension_tests_win,
-      tests_no_nugets_lin,
-      tests_no_nugets_macos,
-      tests_no_nugets_win,
-      tests_requires_nugets_lin,
-      tests_requires_nugets_macos,
-      tests_requires_nugets_win
+      tests_no_nugets,
+      tests_requires_nugets
     ]
     steps:
       - name: Checkout code

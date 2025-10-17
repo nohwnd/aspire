@@ -263,7 +263,28 @@ if ($RegularTestProjectsFile -and (Test-Path $RegularTestProjectsFile)) {
   }
 }
 
-$matrix = @{ include = $entries }
+# Expand entries to create one per supported OS
+$expandedEntries = [System.Collections.Generic.List[object]]::new()
+foreach ($entry in $entries) {
+  $supportedOSes = $entry.supportedOSes
+  if (-not $supportedOSes) {
+    $supportedOSes = @('windows', 'linux', 'macos')
+  }
+  
+  foreach ($os in $supportedOSes) {
+    $expandedEntry = [ordered]@{}
+    foreach ($key in $entry.Keys) {
+      if ($key -ne 'supportedOSes') {
+        $expandedEntry[$key] = $entry[$key]
+      }
+    }
+    $expandedEntry['os'] = $os
+    $expandedEntries.Add($expandedEntry) | Out-Null
+  }
+}
+
+$matrix = @{ include = $expandedEntries }
 New-Item -ItemType Directory -Force -Path $OutputDirectory | Out-Null
 $matrix | ConvertTo-Json -Depth 10 -Compress | Set-Content -Path (Join-Path $OutputDirectory 'combined-tests-matrix.json') -Encoding UTF8
-Write-Host "Matrix entries: $($entries.Count)"
+Write-Host "Matrix entries (before OS expansion): $($entries.Count)"
+Write-Host "Matrix entries (after OS expansion): $($expandedEntries.Count)"
