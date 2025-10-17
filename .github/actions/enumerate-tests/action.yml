@@ -70,8 +70,8 @@ runs:
           $nugetMatrixJson = ConvertTo-Json $nugetMatrix -Compress -Depth 10
           $nonNugetMatrixJson = ConvertTo-Json $nonNugetMatrix -Compress -Depth 10
 
-          "tests_matrix_requires_nugets=$nugetMatrixJson" | Out-File -FilePath $env:GITHUB_OUTPUT
-          "tests_matrix_no_nugets=$nonNugetMatrixJson" | Out-File -FilePath $env:GITHUB_OUTPUT
+          "tests_matrix_requires_nugets=$nugetMatrixJson" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "tests_matrix_no_nugets=$nonNugetMatrixJson" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
 
           Write-Host "Combined test matrices generated successfully"
           Write-Host "Tests requiring nugets: $($testsRequiringNugets.Count)"
@@ -79,8 +79,8 @@ runs:
         } else {
           # Empty matrices if no combined matrix found
           $emptyMatrix = '{"include":[]}'
-          "tests_matrix_requires_nugets=$emptyMatrix" | Out-File -FilePath $env:GITHUB_OUTPUT
-          "tests_matrix_no_nugets=$emptyMatrix" | Out-File -FilePath $env:GITHUB_OUTPUT
+          "tests_matrix_requires_nugets=$emptyMatrix" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+          "tests_matrix_no_nugets=$emptyMatrix" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
           Write-Host "No combined test matrix found, using empty matrices"
         }
 
