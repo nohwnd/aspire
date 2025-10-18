@@ -71,7 +71,7 @@ public class WithUrlsTests
         var app = await builder.BuildAsync();
         await app.StartAsync();
 
-        await tcs.Task;
+        await tcs.Task.DefaultTimeout();
 
         await app.StopAsync();
     }
@@ -94,7 +94,7 @@ public class WithUrlsTests
         var app = await builder.BuildAsync();
         await app.StartAsync();
 
-        await tcs.Task;
+        await tcs.Task.DefaultTimeout();
 
         Assert.NotNull(logger);
         Assert.True(logger is not NullLogger);
@@ -126,7 +126,7 @@ public class WithUrlsTests
 
         await app.StartAsync();
 
-        Assert.NotNull(await tcs.Task);
+        Assert.NotNull(await tcs.Task.DefaultTimeout());
 
         await app.StopAsync();
     }
@@ -147,7 +147,7 @@ public class WithUrlsTests
 
         var app = await builder.BuildAsync();
         await app.StartAsync();
-        await tcs.Task;
+        await tcs.Task.DefaultTimeout();
 
         var urls = projectA.Resource.Annotations.OfType<ResourceUrlAnnotation>();
         Assert.Single(urls, u => u.Url == "https://example.com" && u.DisplayText == "Example");
@@ -171,7 +171,7 @@ public class WithUrlsTests
 
         var app = await builder.BuildAsync();
         await app.StartAsync();
-        await tcs.Task;
+        await tcs.Task.DefaultTimeout();
 
         var urls = projectA.Resource.Annotations.OfType<ResourceUrlAnnotation>();
         Assert.Single(urls, u => u.Url == "https://example.com" && u.DisplayText == "Example");
@@ -197,7 +197,7 @@ public class WithUrlsTests
 
         var app = await builder.BuildAsync();
         await app.StartAsync();
-        await tcs.Task;
+        await tcs.Task.DefaultTimeout();
 
         var urls = projectA.Resource.Annotations.OfType<ResourceUrlAnnotation>();
         var endpointUrl = urls.First(u => u.Endpoint is not null);
@@ -225,7 +225,7 @@ public class WithUrlsTests
 
         var app = await builder.BuildAsync();
         await app.StartAsync();
-        await tcs.Task;
+        await tcs.Task.DefaultTimeout();
 
         var urls = projectA.Resource.Annotations.OfType<ResourceUrlAnnotation>();
         Assert.Single(urls, u => u.Url.StartsWith("http://localhost") && u.Endpoint?.EndpointName == "test");
@@ -248,7 +248,7 @@ public class WithUrlsTests
 
         var app = await builder.BuildAsync();
         await app.StartAsync();
-        await tcs.Task;
+        await tcs.Task.DefaultTimeout();
 
         var urls = projectA.Resource.Annotations.OfType<ResourceUrlAnnotation>();
         Assert.Single(urls, u => u.Url.EndsWith("/sub-path") && u.Endpoint?.EndpointName == "http");
@@ -271,7 +271,7 @@ public class WithUrlsTests
 
         var app = await builder.BuildAsync();
         await app.StartAsync();
-        await tcs.Task;
+        await tcs.Task.DefaultTimeout();
 
         var urls = projectA.Resource.Annotations.OfType<ResourceUrlAnnotation>();
         Assert.Single(urls, u => u.Url == "http://custom.localhost:23456/home" && u.Endpoint?.EndpointName == "http");
@@ -301,7 +301,7 @@ public class WithUrlsTests
 
         var app = await builder.BuildAsync();
         await app.StartAsync();
-        await tcs.Task;
+        await tcs.Task.DefaultTimeout();
 
         var urls = projectA.Resource.Annotations.OfType<ResourceUrlAnnotation>();
         Assert.Single(urls, u =>
@@ -669,7 +669,7 @@ public class WithUrlsTests
 
         var app = await builder.BuildAsync();
         await app.StartAsync();
-        await tcs.Task;
+        await tcs.Task.DefaultTimeout();
 
         Assert.False(called);
 
@@ -698,7 +698,7 @@ public class WithUrlsTests
 
         var app = await builder.BuildAsync();
         await app.StartAsync();
-        await tcs.Task;
+        await tcs.Task.DefaultTimeout();
 
         Assert.False(called);
 
@@ -726,7 +726,7 @@ public class WithUrlsTests
 
         var app = await builder.BuildAsync();
         await app.StartAsync();
-        await tcs.Task;
+        await tcs.Task.DefaultTimeout();
 
         var allUrls = projectA.Resource.Annotations.OfType<ResourceUrlAnnotation>();
         var endpointUrl = allUrls.FirstOrDefault(u => u.Endpoint?.EndpointName == "test");
@@ -774,7 +774,7 @@ public class WithUrlsTests
 
         var app = await builder.BuildAsync();
         await app.StartAsync();
-        await tcs.Task;
+        await tcs.Task.DefaultTimeout();
 
         var endpointUrl = projectA.Resource.Annotations.OfType<ResourceUrlAnnotation>().FirstOrDefault(u => u.Endpoint?.EndpointName == "test");
 
@@ -804,7 +804,7 @@ public class WithUrlsTests
 
         var app = await builder.BuildAsync();
         await app.StartAsync();
-        await tcs.Task;
+        await tcs.Task.DefaultTimeout();
 
         var endpointUrl = projectA.Resource.Annotations.OfType<ResourceUrlAnnotation>().FirstOrDefault(u => u.Endpoint?.EndpointName == "test" && u.Url.EndsWith("/sub-path"));
 
@@ -834,7 +834,7 @@ public class WithUrlsTests
 
         var app = await builder.BuildAsync();
         await app.StartAsync();
-        await tcs.Task;
+        await tcs.Task.DefaultTimeout();
 
         var endpointUrl = projectA.Resource.Annotations.OfType<ResourceUrlAnnotation>().FirstOrDefault(u => u.Endpoint?.EndpointName == "test" && u.Url.EndsWith("/sub-path"));
 
