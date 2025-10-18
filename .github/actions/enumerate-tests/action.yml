@@ -54,9 +54,9 @@ runs:
           # Define defaults to apply when properties are missing
           $defaults = @{
             extraTestArgs = ''
-            requiresNugets = $false
-            requiresTestSdk = $false
-            enablePlaywrightInstall = $false
+            requiresNugets = 'false'
+            requiresTestSdk = 'false'
+            enablePlaywrightInstall = 'false'
             testSessionTimeout = '20m'
             testHangTimeout = '10m'
             supportedOSes = @('windows', 'linux', 'macos')
@@ -100,8 +100,19 @@ runs:
               }
               $testCopy | Add-Member -NotePropertyName 'runs-on' -NotePropertyValue $osRunner -Force
 
+              # Normalize boolean string values to ensure consistency
+              if ($testCopy.PSObject.Properties.Name.Contains('requiresNugets')) {
+                $testCopy.requiresNugets = ($testCopy.requiresNugets -eq 'true' -or $testCopy.requiresNugets -eq $true).ToString().ToLower()
+              }
+              if ($testCopy.PSObject.Properties.Name.Contains('requiresTestSdk')) {
+                $testCopy.requiresTestSdk = ($testCopy.requiresTestSdk -eq 'true' -or $testCopy.requiresTestSdk -eq $true).ToString().ToLower()
+              }
+              if ($testCopy.PSObject.Properties.Name.Contains('enablePlaywrightInstall')) {
+                $testCopy.enablePlaywrightInstall = ($testCopy.enablePlaywrightInstall -eq 'true' -or $testCopy.enablePlaywrightInstall -eq $true).ToString().ToLower()
+              }
+
               # Add to appropriate list based on requiresNugets
-              if ($testCopy.requiresNugets -eq "true" -or $testCopy.requiresNugets -eq $true) {
+              if ($testCopy.requiresNugets -eq 'true') {
                 $testsRequiringNugets += $testCopy
               } else {
                 $testsNotRequiringNugets += $testCopy

@@ -243,13 +243,7 @@
 
     <!-- Create helix directory and write metadata file -->
     <MakeDir Directories="$(_HelixDir)" />
-        <WriteLinesToFile File="$(TestMetadataFile)" Overwrite="true" Lines="{
-  &quot;projectName&quot;: &quot;$(AssemblyName)&quot;,
-  &quot;testProjectPath&quot;: &quot;$(MSBuildProjectFullPath)&quot;,
-  &quot;supportedOSes&quot;: [$(SupportedOSesJson)],
-  &quot;testSessionTimeout&quot;: &quot;20m&quot;,
-  &quot;testHangTimeout&quot;: &quot;10m&quot;
-}" />
+    <WriteLinesToFile File="$(_MetadataFile)" Overwrite="true" Lines="$(_MetadataJson)" />
 
     <Message Text="Wrote test metadata: $(_MetadataFile) (requiresNugets=$(_RequiresNugets), requiresTestSdk=$(_RequiresTestSdk), enablePlaywright=$(_EnablePlaywrightInstall), supportedOSes=$(_SupportedOSesJson), path=$(_RelativeProjectPath))" Importance="Low" />
   </Target>
