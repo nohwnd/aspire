@@ -120,8 +120,8 @@ function New-CollectionTestEntry {
   $entry = [ordered]@{
     type = 'collection'
     projectName = $Metadata.projectName
-    name = if ($IsUncollected) { "$baseShortName-$suffix" } else { "$baseShortName-$suffix" }
-    shortname = if ($IsUncollected) { "$baseShortName-$suffix" } else { "$baseShortName-$suffix" }
+    name = if ($IsUncollected) { $baseShortName } else { "$baseShortName-$suffix" }
+    shortname = if ($IsUncollected) { $baseShortName } else { "$baseShortName-$suffix" }
     testProjectPath = $Metadata.testProjectPath
     workitemprefix = "$($Metadata.projectName)_$suffix"
     collection = $CollectionName
