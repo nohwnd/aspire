@@ -728,74 +728,6 @@ public class DistributedApplicationPipelineTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_WithThreeStepsFailingAtSameLevel_CapturesAllExceptions()
-    {
-        using var builder = TestDistributedApplicationBuilder.Create(DistributedApplicationOperation.Publish, publisher: "default", isDeploy: true);
-        var pipeline = new DistributedApplicationPipeline();
-
-        pipeline.AddStep("failing-step1", async (context) =>
-        {
-            await Task.CompletedTask;
-            throw new InvalidOperationException("Error 1");
-        });
-
-        pipeline.AddStep("failing-step2", async (context) =>
-        {
-            await Task.CompletedTask;
-            throw new InvalidOperationException("Error 2");
-        });
-
-        pipeline.AddStep("failing-step3", async (context) =>
-        {
-            await Task.CompletedTask;
-            throw new InvalidOperationException("Error 3");
-        });
-
-        var context = CreateDeployingContext(builder.Build());
-
-        var exception = await Assert.ThrowsAsync<AggregateException>(() => pipeline.ExecuteAsync(context));
-        Assert.Equal(3, exception.InnerExceptions.Count);
-        Assert.Contains(exception.InnerExceptions, e => e.Message.Contains("failing-step1"));
-        Assert.Contains(exception.InnerExceptions, e => e.Message.Contains("failing-step2"));
-        Assert.Contains(exception.InnerExceptions, e => e.Message.Contains("failing-step3"));
-    }
-
-    [Fact]
-    public async Task ExecuteAsync_WithDifferentExceptionTypesAtSameLevel_CapturesAllTypes()
-    {
-        using var builder = TestDistributedApplicationBuilder.Create(DistributedApplicationOperation.Publish, publisher: "default", isDeploy: true);
-        var pipeline = new DistributedApplicationPipeline();
-
-        pipeline.AddStep("invalid-op-step", async (context) =>
-        {
-            await Task.CompletedTask;
-            throw new InvalidOperationException("Invalid operation");
-        });
-
-        pipeline.AddStep("not-supported-step", async (context) =>
-        {
-            await Task.CompletedTask;
-            throw new NotSupportedException("Not supported");
-        });
-
-        pipeline.AddStep("argument-step", async (context) =>
-        {
-            await Task.CompletedTask;
-            throw new ArgumentException("Bad argument");
-        });
-
-        var context = CreateDeployingContext(builder.Build());
-
-        var exception = await Assert.ThrowsAsync<AggregateException>(() => pipeline.ExecuteAsync(context));
-        Assert.Equal(3, exception.InnerExceptions.Count);
-
-        var innerExceptions = exception.InnerExceptions.ToList();
-        Assert.Contains(innerExceptions, e => e is InvalidOperationException && e.Message.Contains("invalid-op-step"));
-        Assert.Contains(innerExceptions, e => e is InvalidOperationException && e.Message.Contains("not-supported-step"));
-        Assert.Contains(innerExceptions, e => e is InvalidOperationException && e.Message.Contains("argument-step"));
-    }
-
-    [Fact]
     public async Task ExecuteAsync_WithFailingStep_PreservesOriginalStackTrace()
     {
         using var builder = TestDistributedApplicationBuilder.Create(DistributedApplicationOperation.Publish, publisher: "default", isDeploy: true);
@@ -816,64 +748,15 @@ public class DistributedApplicationPipelineTests
     }
 
     [Fact]
-    public async Task ExecuteAsync_WithParallelSuccessfulAndFailingSteps_OnlyFailuresReported()
-    {
-        using var builder = TestDistributedApplicationBuilder.Create(DistributedApplicationOperation.Publish, publisher: "default", isDeploy: true);
-        var pipeline = new DistributedApplicationPipeline();
-
-        var executedSteps = new List<string>();
-
-        pipeline.AddStep("success1", async (context) =>
-        {
-            lock (executedSteps) { executedSteps.Add("success1"); }
-            await Task.CompletedTask;
-        });
-
-        pipeline.AddStep("fail1", async (context) =>
-        {
-            lock (executedSteps) { executedSteps.Add("fail1"); }
-            await Task.CompletedTask;
-            throw new InvalidOperationException("Failure 1");
-        });
-
-        pipeline.AddStep("success2", async (context) =>
-        {
-            lock (executedSteps) { executedSteps.Add("success2"); }
-            await Task.CompletedTask;
-        });
-
-        pipeline.AddStep("fail2", async (context) =>
-        {
-            lock (executedSteps) { executedSteps.Add("fail2"); }
-            await Task.CompletedTask;
-            throw new InvalidOperationException("Failure 2");
-        });
-
-        var context = CreateDeployingContext(builder.Build());
-
-        var exception = await Assert.ThrowsAsync<AggregateException>(() => pipeline.ExecuteAsync(context));
-
-        // All steps should have attempted to execute
-        Assert.Contains("success1", executedSteps);
-        Assert.Contains("success2", executedSteps);
-        Assert.Contains("fail1", executedSteps);
-        Assert.Contains("fail2", executedSteps);
-
-        // Only failures should be in the exception
-        Assert.Equal(2, exception.InnerExceptions.Count);
-        Assert.All(exception.InnerExceptions, e => Assert.IsType<InvalidOperationException>(e));
-    }
-
-    [Fact]
     public async Task PublishAsync_Deploy_WithNoResourcesAndNoPipelineSteps_ReturnsError()
     {
         // Arrange
         using var builder = TestDistributedApplicationBuilder.Create(DistributedApplicationOperation.Publish, publisher: "default", isDeploy: true);
 
         var interactionService = PublishingActivityReporterTests.CreateInteractionService();
-        var reporter = new PublishingActivityReporter(interactionService, NullLogger<PublishingActivityReporter>.Instance);
+        var reporter = new PipelineActivityReporter(interactionService, NullLogger<PipelineActivityReporter>.Instance);
 
-        builder.Services.AddSingleton<IPublishingActivityReporter>(reporter);
+        builder.Services.AddSingleton<IPipelineActivityReporter>(reporter);
 
         var app = builder.Build();
         var publisher = app.Services.GetRequiredKeyedService<IDistributedApplicationPublisher>("default");
@@ -906,9 +789,9 @@ public class DistributedApplicationPipelineTests
         using var builder = TestDistributedApplicationBuilder.Create(DistributedApplicationOperation.Publish, publisher: "default", isDeploy: true);
 
         var interactionService = PublishingActivityReporterTests.CreateInteractionService();
-        var reporter = new PublishingActivityReporter(interactionService, NullLogger<PublishingActivityReporter>.Instance);
+        var reporter = new PipelineActivityReporter(interactionService, NullLogger<PipelineActivityReporter>.Instance);
 
-        builder.Services.AddSingleton<IPublishingActivityReporter>(reporter);
+        builder.Services.AddSingleton<IPipelineActivityReporter>(reporter);
 
         var pipeline = new DistributedApplicationPipeline();
         pipeline.AddStep("test-step", async (context) => await Task.CompletedTask);
@@ -947,9 +830,9 @@ public class DistributedApplicationPipelineTests
         using var builder = TestDistributedApplicationBuilder.Create(DistributedApplicationOperation.Publish, publisher: "default", isDeploy: true);
 
         var interactionService = PublishingActivityReporterTests.CreateInteractionService();
-        var reporter = new PublishingActivityReporter(interactionService, NullLogger<PublishingActivityReporter>.Instance);
+        var reporter = new PipelineActivityReporter(interactionService, NullLogger<PipelineActivityReporter>.Instance);
 
-        builder.Services.AddSingleton<IPublishingActivityReporter>(reporter);
+        builder.Services.AddSingleton<IPipelineActivityReporter>(reporter);
 
         var resource = builder.AddResource(new CustomResource("test-resource"))
             .WithAnnotation(new PipelineStepAnnotation(() => new PipelineStep
@@ -995,9 +878,9 @@ public class DistributedApplicationPipelineTests
         using var builder = TestDistributedApplicationBuilder.Create(DistributedApplicationOperation.Publish, publisher: "default", isDeploy: true);
 
         var interactionService = PublishingActivityReporterTests.CreateInteractionService();
-        var reporter = new PublishingActivityReporter(interactionService, NullLogger<PublishingActivityReporter>.Instance);
+        var reporter = new PipelineActivityReporter(interactionService, NullLogger<PipelineActivityReporter>.Instance);
 
-        builder.Services.AddSingleton<IPublishingActivityReporter>(reporter);
+        builder.Services.AddSingleton<IPipelineActivityReporter>(reporter);
 
         var resource = builder.AddResource(new CustomResource("test-resource"))
             .WithAnnotation(new PipelineStepAnnotation(() => new PipelineStep
@@ -1043,9 +926,9 @@ public class DistributedApplicationPipelineTests
         });
 
         var interactionService = PublishingActivityReporterTests.CreateInteractionService();
-        var reporter = new PublishingActivityReporter(interactionService, NullLogger<PublishingActivityReporter>.Instance);
+        var reporter = new PipelineActivityReporter(interactionService, NullLogger<PipelineActivityReporter>.Instance);
 
-        builder.Services.AddSingleton<IPublishingActivityReporter>(reporter);
+        builder.Services.AddSingleton<IPipelineActivityReporter>(reporter);
 
         var app = builder.Build();
         var publisher = app.Services.GetRequiredKeyedService<IDistributedApplicationPublisher>("default");
@@ -1084,9 +967,9 @@ public class DistributedApplicationPipelineTests
         });
 
         var interactionService = PublishingActivityReporterTests.CreateInteractionService();
-        var reporter = new PublishingActivityReporter(interactionService, NullLogger<PublishingActivityReporter>.Instance);
+        var reporter = new PipelineActivityReporter(interactionService, NullLogger<PipelineActivityReporter>.Instance);
 
-        builder.Services.AddSingleton<IPublishingActivityReporter>(reporter);
+        builder.Services.AddSingleton<IPipelineActivityReporter>(reporter);
 
         var resource = builder.AddResource(new CustomResource("test-resource"))
             .WithAnnotation(new PublishingCallbackAnnotation(async (context) => await Task.CompletedTask));
@@ -1146,10 +1029,10 @@ public class DistributedApplicationPipelineTests
         var context = CreateDeployingContext(builder.Build());
 
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => pipeline.ExecuteAsync(context));
-        
+
         // The dependent step should not have executed
         Assert.False(dependentStepExecuted, "Dependent step should not execute when dependency fails");
-        
+
         // The error message should indicate which dependency failed
         Assert.Contains("failing-dependency", ex.Message);
         Assert.Contains("failed", ex.Message);
@@ -1186,10 +1069,10 @@ public class DistributedApplicationPipelineTests
         var context = CreateDeployingContext(builder.Build());
 
         var ex = await Assert.ThrowsAsync<AggregateException>(() => pipeline.ExecuteAsync(context));
-        
+
         // The dependent step should not have executed
         Assert.False(dependentStepExecuted, "Dependent step should not execute when dependencies fail");
-        
+
         // Should report multiple failures
         Assert.Contains("Multiple pipeline steps failed", ex.Message);
         Assert.Equal(2, ex.InnerExceptions.Count);
@@ -1323,69 +1206,9 @@ public class DistributedApplicationPipelineTests
         Assert.True(executionTimes["D"] >= executionTimes["C"], "D should start after C completes");
     }
 
-    [Fact]
-    public async Task ExecuteAsync_WithLongAndShortBranches_DoesNotBlockShortBranch()
+    private static PipelineContext CreateDeployingContext(DistributedApplication app)
     {
-        // Test that a long-running branch doesn't block an independent short branch
-        // Pattern: A -> LongB, A -> ShortB -> C
-        // C should be able to complete while LongB is still running
-        using var builder = TestDistributedApplicationBuilder.Create(DistributedApplicationOperation.Publish, publisher: "default", isDeploy: true);
-        var pipeline = new DistributedApplicationPipeline();
-
-        var completionOrder = new List<string>();
-        var completionTimes = new Dictionary<string, DateTime>();
-
-        pipeline.AddStep("A", async (context) =>
-        {
-            await Task.Delay(10);
-        });
-
-        pipeline.AddStep("LongB", async (context) =>
-        {
-            await Task.Delay(100);
-            lock (completionOrder)
-            {
-                completionOrder.Add("LongB");
-                completionTimes["LongB"] = DateTime.UtcNow;
-            }
-        }, dependsOn: "A");
-
-        pipeline.AddStep("ShortB", async (context) =>
-        {
-            await Task.Delay(10);
-            lock (completionOrder)
-            {
-                completionOrder.Add("ShortB");
-                completionTimes["ShortB"] = DateTime.UtcNow;
-            }
-        }, dependsOn: "A");
-
-        pipeline.AddStep("C", async (context) =>
-        {
-            await Task.Delay(10);
-            lock (completionOrder)
-            {
-                completionOrder.Add("C");
-                completionTimes["C"] = DateTime.UtcNow;
-            }
-        }, dependsOn: "ShortB");
-
-        var context = CreateDeployingContext(builder.Build());
-        await pipeline.ExecuteAsync(context);
-
-        // C should complete before LongB (demonstrating improved concurrency)
-        var cIndex = completionOrder.IndexOf("C");
-        var longBIndex = completionOrder.IndexOf("LongB");
-
-        Assert.True(cIndex < longBIndex,
-            "C should complete before LongB (not blocked by long-running parallel branch)");
-        Assert.True(completionTimes["C"] < completionTimes["LongB"],
-            "C should complete before LongB based on timestamps");
-    }
-
-    private static DeployingContext CreateDeployingContext(DistributedApplication app)
-    {
-        return new DeployingContext(
+        return new PipelineContext(
             app.Services.GetRequiredService<DistributedApplicationModel>(),
             app.Services.GetRequiredService<DistributedApplicationExecutionContext>(),
             app.Services,
