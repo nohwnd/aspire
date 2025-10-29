@@ -75,8 +75,8 @@
       <_InitialMetadataLines Include="  &quot;projectName&quot;: &quot;$(MSBuildProjectName)&quot;," />
       <_InitialMetadataLines Include="  &quot;testClassNamesPrefix&quot;: &quot;$(TestClassNamesPrefix)&quot;," />
       <_InitialMetadataLines Include="  &quot;testProjectPath&quot;: &quot;$(_RelativeProjectPath)/$(MSBuildProjectFile)&quot;," />
-      <_InitialMetadataLines Include="  &quot;requiresNugets&quot;: &quot;$(RequiresNugetsForSplitTests)&quot;," />
-      <_InitialMetadataLines Include="  &quot;requiresTestSdk&quot;: &quot;$(RequiresTestSdkForSplitTests)&quot;," />
+      <_InitialMetadataLines Include="  &quot;requiresNugets&quot;: &quot;$(RequiresNugets)&quot;," />
+      <_InitialMetadataLines Include="  &quot;requiresTestSdk&quot;: &quot;$(RequiresTestSdk)&quot;," />
       <_InitialMetadataLines Include="  &quot;testSessionTimeout&quot;: &quot;$(TestSessionTimeout)&quot;," />
       <_InitialMetadataLines Include="  &quot;testHangTimeout&quot;: &quot;$(TestHangTimeout)&quot;," />
       <_InitialMetadataLines Include="  &quot;uncollectedTestsSessionTimeout&quot;: &quot;$(UncollectedTestsSessionTimeout)&quot;," />

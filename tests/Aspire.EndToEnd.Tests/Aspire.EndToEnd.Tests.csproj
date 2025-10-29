@@ -17,7 +17,7 @@
     <IncludeTestPackages>false</IncludeTestPackages>
     <DeployOutsideOfRepoSupportFilesDir>testassets\testproject\</DeployOutsideOfRepoSupportFilesDir>
 
-    <RequiresNugetsForSplitTests>true</RequiresNugetsForSplitTests>
+    <RequiresNugets>true</RequiresNugets>
 
     <_BuildForTestsRunningOutsideOfRepo Condition="'$(TestsRunningOutsideOfRepo)' == 'true' or '$(ContinuousIntegrationBuild)' == 'true'">true</_BuildForTestsRunningOutsideOfRepo>
     <DeployOutsideOfRepoSupportFiles>$(_BuildForTestsRunningOutsideOfRepo)</DeployOutsideOfRepoSupportFiles>

@@ -16,11 +16,10 @@
     <SplitTestsOnCI>true</SplitTestsOnCI>
     <TestClassNamesPrefix>Aspire.Templates.Tests</TestClassNamesPrefix>
 
-    <!-- FIXME: remove *ForSplitTests suffix -->
     <!-- Templates tests require packages and SDK -->
-    <RequiresNugetsForSplitTests>true</RequiresNugetsForSplitTests>
-    <RequiresTestSdkForSplitTests>true</RequiresTestSdkForSplitTests>
-    <EnablePlaywrightInstallForSplitTests>true</EnablePlaywrightInstallForSplitTests>
+    <RequiresNugets>true</RequiresNugets>
+    <RequiresTestSdk>true</RequiresTestSdk>
+    <EnablePlaywrightInstall>true</EnablePlaywrightInstall>
 
     <!-- Timeout configuration -->
     <TestSessionTimeout>20m</TestSessionTimeout>
