@@ -3,5 +3,7 @@
     "dotnet.testWindow.useTestingPlatformProtocol": true,
     "dotnet.defaultSolution": "./Aspire.slnx",
     "dotnet.preview.enableSupportForSlnx": true,
-    "aspire.enableSettingsFileCreationPromptOnStartup": false
+    "aspire.enableSettingsFileCreationPromptOnStartup": false,
+    "azureFunctions.projectSubpath": "artifacts\\bin\\AzureFunctionsEndToEnd.Functions\\Debug\\net8.0",
+    "dotnet.unitTests.runSettingsPath": "runsettings.runsettings"
 }
