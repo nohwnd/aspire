@@ -154,7 +154,7 @@ jobs:
 
           # Create OS-specific directories
           New-Item -ItemType Directory -Path "${{ github.workspace }}/testresults/ubuntu-latest" -Force
-          New-Item -ItemType Directory -Path "${{ github.workspace }}/testresults/windows-latest" -Force
+          New-Item -ItemType Directory -Path "${{ github.workspace }}/testresults/self-hosted" -Force
           New-Item -ItemType Directory -Path "${{ github.workspace }}/testresults/macos-latest" -Force
 
           # Find all .trx files
@@ -165,7 +165,7 @@ jobs:
               if ($trxFile.FullName -match "ubuntu") {
                   Copy-Item -Path $trxFile.FullName -Destination "${{ github.workspace }}/testresults/ubuntu-latest/" -Force
               } elseif ($trxFile.FullName -match "windows") {
-                  Copy-Item -Path $trxFile.FullName -Destination "${{ github.workspace }}/testresults/windows-latest/" -Force
+                  Copy-Item -Path $trxFile.FullName -Destination "${{ github.workspace }}/testresults/self-hosted/" -Force
               } elseif ($trxFile.FullName -match "macos") {
                   Copy-Item -Path $trxFile.FullName -Destination "${{ github.workspace }}/testresults/macos-latest/" -Force
               }

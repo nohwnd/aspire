@@ -17,7 +17,7 @@ jobs:
         targets:
           - os: ubuntu-latest
             rids: linux-x64
-          - os: windows-latest
+          - os: self-hosted
             rids: win-x64
           - os: macos-latest
             rids: osx-arm64
@@ -27,7 +27,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683  # v4.2.2
 
       - name: Build CLI packages (Windows)
-        if: ${{ matrix.targets.os == 'windows-latest' }}
+        if: ${{ matrix.targets.os == 'self-hosted' }}
         shell: pwsh
         run: >
           .\build.cmd
@@ -41,7 +41,7 @@ jobs:
           ${{ inputs.versionOverrideArg }}
 
       - name: Build CLI packages (Unix)
-        if: ${{ matrix.targets.os != 'windows-latest' }}
+        if: ${{ matrix.targets.os != 'self-hosted' }}
         shell: bash
         run: >
           ./build.sh
