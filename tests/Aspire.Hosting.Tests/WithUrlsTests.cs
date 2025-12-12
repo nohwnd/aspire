@@ -30,20 +30,6 @@ public class WithUrlsTests(ITestOutputHelper testOutputHelper)
     }
 
     [Fact]
-    public void WithUrlsAddsAnnotationForSyncCallback()
-    {
-        using var builder = TestDistributedApplicationBuilder.Create(testOutputHelper);
-
-        var projectA = builder.AddProject<ProjectA>("projecta");
-
-        Assert.Empty(projectA.Resource.Annotations.OfType<ResourceUrlsCallbackAnnotation>());
-
-        projectA.WithUrls(c => { });
-
-        Assert.NotEmpty(projectA.Resource.Annotations.OfType<ResourceUrlsCallbackAnnotation>());
-    }
-
-    [Fact]
     public async Task WithUrlsCallsCallbackAfterBeforeResourceStartedEvent()
     {
         using var builder = TestDistributedApplicationBuilder.Create(testOutputHelper);
@@ -890,6 +876,20 @@ public class WithUrlsTests(ITestOutputHelper testOutputHelper)
         Assert.True(endpointUrl.Url.StartsWith("http://localhost") && endpointUrl.Url.EndsWith("/sub-path"));
 
         await app.StopAsync().DefaultTimeout();
+    }
+
+    [Fact]
+    public void WithUrlsAddsAnnotationForSyncCallback()
+    {
+        using var builder = TestDistributedApplicationBuilder.Create(testOutputHelper);
+
+        var projectA = builder.AddProject<ProjectA>("projecta");
+
+        Assert.Empty(projectA.Resource.Annotations.OfType<ResourceUrlsCallbackAnnotation>());
+
+        projectA.WithUrls(c => { });
+
+        Assert.NotEmpty(projectA.Resource.Annotations.OfType<ResourceUrlsCallbackAnnotation>());
     }
 
     [Fact]
