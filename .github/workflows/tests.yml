@@ -44,7 +44,7 @@ jobs:
 
   setup_for_tests_win:
     name: Setup for tests (Windows)
-    runs-on: windows-latest
+    runs-on: [self-hosted]
     outputs:
       integrations_tests_matrix: ${{ steps.generate_tests_matrix.outputs.integrations_tests_matrix }}
       templates_tests_matrix: ${{ steps.generate_tests_matrix.outputs.templates_tests_matrix }}
@@ -175,7 +175,7 @@ jobs:
 
   extension_tests_win:
     name: Run VS Code extension tests (Windows)
-    runs-on: windows-latest
+    runs-on: [self-hosted]
     defaults:
       run:
         working-directory: ./extension
