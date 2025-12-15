@@ -16,6 +16,7 @@ public class WithUrlsTests(ITestOutputHelper testOutputHelper)
     [Fact]
     public void WithUrlsAddsAnnotationForAsyncCallback()
     {
+        // Hello :)
         using var builder = TestDistributedApplicationBuilder.Create(testOutputHelper);
 
         Func<ResourceUrlsCallbackContext, Task> callback = c => Task.CompletedTask;

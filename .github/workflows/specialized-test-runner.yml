@@ -34,7 +34,7 @@ jobs:
   generate_tests_matrix:
     name: Generate test runsheet
     runs-on: ubuntu-latest
-    if: ${{ github.repository_owner == 'dotnet' }}
+    if: ${{ github.repository_owner == 'nohwnd' }}
     outputs:
       runsheet: ${{ steps.generate_tests_matrix.outputs.runsheet }}
       requiresNugets: ${{ steps.check_nugets.outputs.requiresNugets }}
@@ -98,7 +98,7 @@ jobs:
   build_packages:
     name: Build packages
     needs: [generate_tests_matrix]
-    if: ${{ github.repository_owner == 'dotnet' && needs.generate_tests_matrix.outputs.requiresNugets == 'true' }}
+    if: ${{ github.repository_owner == 'nohwnd' && needs.generate_tests_matrix.outputs.requiresNugets == 'true' }}
     uses: ./.github/workflows/build-packages.yml
 
   run_tests:
@@ -108,7 +108,7 @@ jobs:
       fail-fast: false
       matrix:
         tests: ${{ fromJson(needs.generate_tests_matrix.outputs.runsheet) }}
-    if: ${{ github.repository_owner == 'dotnet' && !cancelled() && !failure() }}
+    if: ${{ github.repository_owner == 'nohwnd' && !cancelled() && !failure() }}
     uses: ./.github/workflows/run-tests.yml
     with:
       testShortName: ${{ matrix.tests.project }}
@@ -120,7 +120,7 @@ jobs:
       ignoreTestFailures: ${{ inputs.ignoreTestFailures }}
 
   results:
-    if: ${{ always() && github.repository_owner == 'dotnet' }}
+    if: ${{ always() && github.repository_owner == 'nohwnd' }}
     runs-on: ubuntu-latest
     name: Final Results
     needs: [generate_tests_matrix, build_packages, run_tests]
@@ -154,7 +154,7 @@ jobs:
 
           # Create OS-specific directories
           New-Item -ItemType Directory -Path "${{ github.workspace }}/testresults/ubuntu-latest" -Force
-          New-Item -ItemType Directory -Path "${{ github.workspace }}/testresults/windows-latest" -Force
+          New-Item -ItemType Directory -Path "${{ github.workspace }}/testresults/self-hosted" -Force
           New-Item -ItemType Directory -Path "${{ github.workspace }}/testresults/macos-latest" -Force
 
           # Find all .trx files
@@ -165,7 +165,7 @@ jobs:
               if ($trxFile.FullName -match "ubuntu") {
                   Copy-Item -Path $trxFile.FullName -Destination "${{ github.workspace }}/testresults/ubuntu-latest/" -Force
               } elseif ($trxFile.FullName -match "windows") {
-                  Copy-Item -Path $trxFile.FullName -Destination "${{ github.workspace }}/testresults/windows-latest/" -Force
+                  Copy-Item -Path $trxFile.FullName -Destination "${{ github.workspace }}/testresults/self-hosted/" -Force
               } elseif ($trxFile.FullName -match "macos") {
                   Copy-Item -Path $trxFile.FullName -Destination "${{ github.workspace }}/testresults/macos-latest/" -Force
               }

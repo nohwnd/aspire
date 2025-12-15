@@ -148,7 +148,7 @@
       <!-- Replace \ with /, and then escape " with \", so we have a compliant JSON -->
       <_TestCommand>$([System.String]::Copy($(_TestCommand)).Replace("\", "/").Replace('&quot;', '\&quot;'))</_TestCommand>
 
-      <_TestRunsheetWindows>{ "label": "w: $(_TestRunsheet)", "project": "$(_TestRunsheet)", "os": "windows-latest", "command": "./eng/build.ps1 $(_TestCommand)", "requiresNugets": $(_RequiresNugets), "requiresTestSdk": $(_RequiresTestSdk) }</_TestRunsheetWindows>
+      <_TestRunsheetWindows>{ "label": "w: $(_TestRunsheet)", "project": "$(_TestRunsheet)", "os": "self-hosted", "command": "./eng/build.ps1 $(_TestCommand)", "requiresNugets": $(_RequiresNugets), "requiresTestSdk": $(_RequiresTestSdk) }</_TestRunsheetWindows>
       <_TestRunsheetLinux>{ "label": "l: $(_TestRunsheet)", "project": "$(_TestRunsheet)", "os": "ubuntu-latest", "command": "./eng/build.sh $(_TestCommand)", "requiresNugets": $(_RequiresNugets), "requiresTestSdk": $(_RequiresTestSdk) }</_TestRunsheetLinux>
       <_TestRunsheetMacOS>{ "label": "m: $(_TestRunsheet)", "project": "$(_TestRunsheet)", "os": "macos-latest", "command": "./eng/build.sh $(_TestCommand)", "requiresNugets": $(_RequiresNugets), "requiresTestSdk": $(_RequiresTestSdk) }</_TestRunsheetMacOS>
     </PropertyGroup>

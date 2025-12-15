@@ -38,7 +38,7 @@
       [
         {
           "project": "Aspire.Test",
-          "os": "windows-latest",
+          "os": "self-hosted",
           "command": "./eng/build.ps1 -restore -build -test -projects \"$(RelativeTestProjectPath)\" /bl:\"$(RelativeTestBinLog)\" -c $(Configuration) -ci /p:RunQuarantinedTests=true /p:CI=false"
         },
         {

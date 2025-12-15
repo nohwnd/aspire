@@ -57,7 +57,7 @@ sealed partial class TestSummaryGenerator
             overallSkippedTestCount += skipped;
 
             // Determine the OS from the path, assuming the path contains
-            // os runner name like `windows-latest`, `ubuntu-latest`, or `macos-latest`
+            // os runner name like `self-hosted`, `ubuntu-latest`, or `macos-latest`
             var os = filePath.Contains("windows-")
                         ? "win"
                         : filePath.Contains("ubuntu-")

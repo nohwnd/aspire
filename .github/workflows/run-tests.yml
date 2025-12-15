@@ -84,7 +84,7 @@ jobs:
           echo ${{ github.workspace }}/.dotnet >> $GITHUB_PATH
 
       - name: Setup vars (Windows)
-        if: ${{ inputs.os == 'windows-latest' }}
+        if: ${{ inputs.os == 'self-hosted' }}
         run: |
           echo "DOTNET_SCRIPT=.\dotnet.cmd" >> $env:GITHUB_ENV
           echo "BUILD_SCRIPT=.\build.cmd" >> $env:GITHUB_ENV
@@ -137,7 +137,7 @@ jobs:
           switch ($os) {
             'ubuntu-latest' { $rid = 'linux-x64' }
             'macos-latest'  { $rid = 'osx-arm64' }
-            'windows-latest'{ $rid = 'win-x64' }
+            'self-hosted'{ $rid = 'win-x64' }
             Default { Write-Error "Unknown OS '$os' for RID mapping"; exit 1 }
           }
           Write-Host "Using RID=$rid"

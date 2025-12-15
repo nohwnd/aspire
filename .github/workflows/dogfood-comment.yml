@@ -19,7 +19,7 @@ on:
 jobs:
   add-dogfood-comment:
     # Only run on the dotnet org to avoid running on forks
-    if: ${{ github.repository_owner == 'dotnet' }}
+    if: ${{ github.repository_owner == 'nohwnd' }}
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write

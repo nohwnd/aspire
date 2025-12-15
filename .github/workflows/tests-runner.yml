@@ -17,7 +17,7 @@ jobs:
   # The runsheet generation is expected to be fast.
   generate_tests_matrix:
     name: Generate test runsheet
-    runs-on: windows-latest
+    runs-on: [self-hosted]
     outputs:
       runsheet: ${{ steps.generate_tests_matrix.outputs.runsheet }}
     steps:
@@ -59,7 +59,7 @@ jobs:
   # the whole solution and publish all the packages.
   generate_e2e_matrix:
     name: Generate E2E test runsheet
-    runs-on: windows-latest
+    runs-on: [self-hosted]
     outputs:
       runsheet: ${{ steps.generate_e2e_matrix.outputs.runsheet }}
     steps:
