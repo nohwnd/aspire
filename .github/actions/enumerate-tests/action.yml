@@ -58,10 +58,10 @@ runs:
         $lines = Get-Content $filePath
         Write-Host ($lines -join "`n")
         $jsonObject = @{
-            "shortname" = $lines -in "hosting", "hosting.testing" | Sort-Object
+            "shortname" = $lines | ? { $_ -in "hosting", "hosting.testing" } | Sort-Object
         }
-        Write-Host $jsonObject
         $jsonString = ConvertTo-Json $jsonObject -Compress
+        Write-Host $jsonString
         "integrations_tests_matrix=$jsonString"
         "integrations_tests_matrix=$jsonString" | Out-File -FilePath $env:GITHUB_OUTPUT
 
