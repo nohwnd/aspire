@@ -56,9 +56,11 @@ runs:
       run: |
         $filePath = "${{ github.workspace }}/artifacts/TestsForGithubActions.list"
         $lines = Get-Content $filePath
+        Write-Host ($lines -join "`n")
         $jsonObject = @{
-            "shortname" = $lines -like "*aspire.hosting.tests*" | Sort-Object
+            "shortname" = $lines -like "*aspire.hosting*" | Sort-Object
         }
+        Write-Host $jsonObject
         $jsonString = ConvertTo-Json $jsonObject -Compress
         "integrations_tests_matrix=$jsonString"
         "integrations_tests_matrix=$jsonString" | Out-File -FilePath $env:GITHUB_OUTPUT
