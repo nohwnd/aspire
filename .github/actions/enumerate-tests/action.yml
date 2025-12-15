@@ -58,7 +58,7 @@ runs:
         $lines = Get-Content $filePath
         Write-Host ($lines -join "`n")
         $jsonObject = @{
-            "shortname" = $lines -like "*aspire.hosting*" | Sort-Object
+            "shortname" = $lines -in "hosting", "hosting.testing" | Sort-Object
         }
         Write-Host $jsonObject
         $jsonString = ConvertTo-Json $jsonObject -Compress
